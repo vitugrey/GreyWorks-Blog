@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "partials/post_cards.html" import view_toggle, render_month_groups %}
+
+{% block content %}
+  {% if featured_posts %}
+  <section class="section-block" aria-labelledby="heading-destaques">
+    <div class="section-header">
+      <div class="section-heading-wrap">
+        <h1 id="heading-destaques" class="section-title">Destaques</h1>
+      </div>
+      <span class="section-meta">Top {{ featured_posts | length }} mais visualizados</span>
+    </div>
+
+    <div class="featured-grid">
+      {% for post in featured_posts %}
+      <article class="post-card post-card--featured">
+        <div class="post-card-meta">
+          <time class="post-card-date" datetime="{{ post.published_at | date_iso }}">
+            {{ post.published_at | date_full }}
+          </time>
+          <span class="post-card-stats">{{ post.views | views_compact }} views</span>
+        </div>
+
+        <div class="post-card-body">
+          <h2 class="post-card-title">
+            <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+          </h2>
+
+          <p class="post-card-summary">{{ post.summary }}</p>
+
+          {% if post.tags %}
+          <div class="post-card-footer">
+            {% for tag in post.tags %}
+            <a href="/tag/{{ tag.slug }}" class="tag-pill">#{{ tag.slug }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="section-block" aria-labelledby="heading-recentes">
+    <div class="section-header">
+      <div class="section-heading-wrap">
+        <h2 id="heading-recentes" class="section-title">Artigos recentes</h2>
+      </div>
+      {{ view_toggle(view_mode) }}
+    </div>
+
+    {{ render_month_groups(month_groups, view_mode, show_category=true) }}
+  </section>
+{% endblock %}

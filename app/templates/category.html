@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "partials/post_cards.html" import view_toggle, render_month_groups %}
+
+{% block content %}
+  <section class="section-block" aria-labelledby="heading-listing">
+    <div class="section-header">
+      <div class="section-heading-wrap">
+        <span class="section-badge">{{ listing_badge }}</span>
+        <h1 id="heading-listing" class="section-title">{{ listing_heading }}</h1>
+        {% if listing_subtitle %}
+        <p class="section-subtitle">{{ listing_subtitle }}</p>
+        {% endif %}
+      </div>
+      {{ view_toggle(view_mode) }}
+    </div>
+
+    {{ render_month_groups(month_groups, view_mode, show_category=(listing_badge != 'Categoria')) }}
+  </section>
+{% endblock %}

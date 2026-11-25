@@ -1,0 +1,83 @@
+{% macro view_toggle(view_mode) %}
+<div class="view-toggle" role="group" aria-label="Modo de exibição dos artigos">
+  <button
+    type="button"
+    class="view-toggle-btn {% if view_mode == 'lista' %}is-active{% endif %}"
+    data-view-toggle="lista"
+    aria-pressed="{{ 'true' if view_mode == 'lista' else 'false' }}"
+  >
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke-linecap="round"/>
+    </svg>
+    <span>Lista</span>
+  </button>
+  <button
+    type="button"
+    class="view-toggle-btn {% if view_mode != 'lista' %}is-active{% endif %}"
+    data-view-toggle="grade"
+    aria-pressed="{{ 'true' if view_mode != 'lista' else 'false' }}"
+  >
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <rect x="2.2" y="2.2" width="4.6" height="4.6" rx="1"/>
+      <rect x="9.2" y="2.2" width="4.6" height="4.6" rx="1"/>
+      <rect x="2.2" y="9.2" width="4.6" height="4.6" rx="1"/>
+      <rect x="9.2" y="9.2" width="4.6" height="4.6" rx="1"/>
+    </svg>
+    <span>Grade</span>
+  </button>
+</div>
+{% endmacro %}
+
+{% macro render_month_groups(month_groups, view_mode, show_category=true) %}
+  {% if month_groups %}
+    {% for group in month_groups %}
+    <div class="month-group">
+      <div class="month-header">
+        <span class="month-label">{{ group.label }}</span>
+        <span class="month-divider" aria-hidden="true"></span>
+        <span class="month-count">{{ group.count_label }}</span>
+      </div>
+
+      <div class="posts-collection {{ 'is-list' if view_mode == 'lista' else 'is-grid' }}">
+        {% for post in group.posts %}
+        <article class="post-card">
+          <div class="post-card-meta">
+            <time class="post-card-date" datetime="{{ post.published_at | date_iso }}">
+              {{ post.published_at | date_short }}
+            </time>
+            <span class="post-card-stats">
+              {% if show_category %}
+              <a href="/categoria/{{ post.category }}" class="category-chip">{{ post.category | category_label }}</a>
+              {% endif %}
+              <span>{{ post.reading_time_min }} min</span>
+            </span>
+          </div>
+
+          <div class="post-card-body">
+            <h3 class="post-card-title">
+              <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+            </h3>
+
+            <p class="post-card-summary">{{ post.summary }}</p>
+
+            {% if post.tags %}
+            <div class="post-card-footer">
+              {% for tag in post.tags %}
+              <a href="/tag/{{ tag.slug }}" class="tag-pill">#{{ tag.slug }}</a>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <h3>Nenhum artigo encontrado</h3>
+      <p>Ainda não há publicações correspondentes a este filtro.</p>
+      <a href="/" class="btn">Voltar para o Blog</a>
+    </div>
+  {% endif %}
+{% endmacro %}

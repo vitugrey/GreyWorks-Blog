@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <div>
+    <a href="/admin" class="back-link">&larr; Voltar ao painel</a>
+    <h1 class="section-title">{{ 'Editar artigo' if post else 'Novo artigo' }}</h1>
+  </div>
+
+  {% if post %}
+  <div class="admin-actions">
+    <a href="/post/{{ post.slug }}" class="btn">Ver artigo</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if flash_msg == "created" %}
+<div class="alert alert-success" role="status">Artigo criado com sucesso.</div>
+{% elif flash_msg == "updated" %}
+<div class="alert alert-success" role="status">Alterações salvas com sucesso.</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-error" role="alert">{{ error }}</div>
+{% endif %}
+
+{% set current_title = post.title if post else form_data.get('title', '') %}
+{% set current_category = post.category if post else form_data.get('category', 'tecnologia') %}
+{% set current_tags = (post.tags | map(attribute='slug') | join(', ')) if post else form_data.get('tags', '') %}
+{% set current_summary = post.summary if post else form_data.get('summary', '') %}
+{% set current_date = (post.published_at | date_iso) if post else form_data.get('published_at', '') %}
+{% set current_published = post.is_published if post else form_data.get('is_published', true) %}
+{% set current_md = post.content_md if post else form_data.get('content_md', '') %}
+
+<form
+  method="post"
+  action="{{ '/admin/posts/' ~ post.id ~ '/edit' if post else '/admin/posts/new' }}"
+  class="panel-card form-grid"
+>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <div class="field">
+    <label for="post-title">Título</label>
+    <input id="post-title" name="title" type="text" value="{{ current_title }}" placeholder="Título do artigo" required>
+    <span class="field-hint">
+      {% if post %}
+      URL atual: <code>/post/{{ post.slug }}</code>
+      {% else %}
+      A URL (slug) será gerada automaticamente a partir do título.
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="form-row-2">
+    <div class="field">
+      <label for="post-category">Categoria</label>
+      <select id="post-category" name="category" required>
+        {% for slug, meta in categories.items() %}
+        <option value="{{ slug }}" {% if current_category == slug %}selected{% endif %}>{{ meta.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="post-date">Data de publicação</label>
+      <input id="post-date" name="published_at" type="date" value="{{ current_date }}">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="post-tags">Hashtags (separadas por vírgula ou espaço)</label>
+    <input id="post-tags" name="tags" type="text" value="{{ current_tags }}" placeholder="fastapi, docker, minimalismo">
+  </div>
+
+  <div class="field">
+    <label for="post-summary">Resumo para os cards (opcional — extraído do texto se vazio)</label>
+    <input id="post-summary" name="summary" type="text" value="{{ current_summary }}" maxlength="420">
+  </div>
+
+  <div class="field">
+    <div class="editor-label-row">
+      <label for="post-content">Conteúdo em Markdown</label>
+      <div class="editor-media-tools">
+        <input
+          id="editor-image-input"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          class="sr-only"
+          data-csrf-token="{{ csrf_token }}"
+        >
+        <button type="button" id="editor-image-btn" class="btn btn-sm">+ Inserir imagem</button>
+        <span id="editor-image-status" class="upload-status" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+    <textarea id="post-content" name="content_md" placeholder="## Comece seu artigo aqui..." required>{{ current_md }}</textarea>
+    <span class="field-hint">Envie PNG, JPG, WebP ou GIF (até 5 MB) para inserir automaticamente no texto em Markdown.</span>
+  </div>
+
+  <label class="checkbox-row">
+    <input type="checkbox" name="is_published" {% if current_published %}checked{% endif %}>
+    <span>Publicado (visível no blog)</span>
+  </label>
+
+  <div class="admin-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Salvar alterações' if post else 'Publicar artigo' }}</button>
+    <a href="/admin" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-card panel-card">
+  <span class="section-badge">Painel Editorial</span>
+  <h1 class="section-title auth-title">Acesso Admin</h1>
+
+  {% if error %}
+  <div class="alert alert-error" role="alert">{{ error }}</div>
+  {% endif %}
+
+  {% if not has_admin %}
+  <div class="alert" role="status">
+    Nenhum usuário administrador cadastrado ainda. Crie via CLI:<br>
+    <code>python -m app.cli create-admin</code>
+  </div>
+  {% endif %}
+
+  <form method="post" action="/admin/login" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="field">
+      <label for="username">Usuário</label>
+      <input id="username" name="username" type="text" required autocomplete="username">
+    </div>
+
+    <div class="field">
+      <label for="password">Senha</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Entrar no painel</button>
+  </form>
+</div>
+{% endblock %}

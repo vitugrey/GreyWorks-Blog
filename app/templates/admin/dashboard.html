@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-toolbar">
+  <h1 class="section-title">Artigos</h1>
+
+  <div class="admin-actions">
+    <a href="/admin/posts/new" class="btn btn-primary">+ Novo artigo</a>
+    <form method="post" action="/admin/logout" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="btn">Sair</button>
+    </form>
+  </div>
+</div>
+
+{% if flash_msg == "deleted" %}
+<div class="alert alert-success" role="status">Artigo removido com sucesso.</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-error" role="alert">{{ error }}</div>
+{% endif %}
+
+<form method="get" action="/admin" class="admin-filter-bar" role="search">
+  <div class="admin-filter-search">
+    <label for="admin-search-q" class="sr-only">Pesquisar artigos</label>
+    <input
+      id="admin-search-q"
+      type="search"
+      name="q"
+      value="{{ filter_q }}"
+      placeholder="Pesquisar por título, conteúdo ou #tag..."
+    >
+  </div>
+
+  <div class="admin-filter-select">
+    <label for="admin-filter-category" class="sr-only">Filtrar por categoria</label>
+    <select id="admin-filter-category" name="category">
+      <option value="">Todas as categorias</option>
+      {% for slug, meta in categories.items() %}
+      <option value="{{ slug }}" {% if filter_category == slug %}selected{% endif %}>{{ meta.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="admin-actions">
+    <button type="submit" class="btn">Filtrar</button>
+    {% if filter_q or filter_category %}
+    <a href="/admin" class="btn btn-sm">Limpar</a>
+    {% endif %}
+  </div>
+</form>
+
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Categoria</th>
+        <th>Status</th>
+        <th>Data</th>
+        <th>Views</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      <tr>
+        <td>
+          <a href="/post/{{ post.slug }}" class="table-post-link">{{ post.title }}</a>
+        </td>
+        <td><span class="category-chip">{{ post.category | category_label }}</span></td>
+        <td>
+          {% if post.is_published %}
+          <span class="status-dot">Publicado</span>
+          {% else %}
+          <span class="status-dot status-dot--draft">Rascunho</span>
+          {% endif %}
+        </td>
+        <td class="table-mono">{{ post.published_at | date_iso }}</td>
+        <td class="table-mono">{{ post.views }}</td>
+        <td>
+          <div class="admin-actions">
+            <a href="/admin/posts/{{ post.id }}/edit" class="btn btn-sm">Editar</a>
+            <form id="delete-form-{{ post.id }}" method="post" action="/admin/posts/{{ post.id }}/delete" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                data-delete-trigger="true"
+                data-form-id="delete-form-{{ post.id }}"
+                data-post-title="{{ post.title }}"
+              >
+                Excluir
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="table-empty">
+          {% if filter_q or filter_category %}
+          Nenhum artigo encontrado para este filtro.
+          {% else %}
+          Nenhum artigo criado ainda.
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<dialog id="delete-confirm-dialog" class="confirm-dialog" aria-labelledby="delete-dialog-heading">
+  <h3 id="delete-dialog-heading">Excluir artigo</h3>
+  <p>Tem certeza que deseja excluir permanentemente <strong id="delete-dialog-title"></strong>?</p>
+  <div class="dialog-actions">
+    <button type="button" id="delete-dialog-cancel" class="btn btn-sm">Cancelar</button>
+    <button type="button" id="delete-dialog-confirm" class="btn btn-sm btn-danger">Confirmar exclusão</button>
+  </div>
+</dialog>
+{% endblock %}
